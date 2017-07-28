@@ -8,8 +8,6 @@ import SafeHTMLElement from '../helpers/safeHTMLElement';
 export const portalClassName = 'ReactModalPortal';
 export const bodyOpenClassName = 'ReactModal__Body--open';
 
-const renderSubtreeIntoContainer = ReactDOM.unstable_renderSubtreeIntoContainer;
-
 function getParentElement(parentSelector) {
   return parentSelector();
 }
@@ -19,17 +17,17 @@ export default class Modal extends Component {
     ariaAppHider.setElement(element);
   }
 
-  /* eslint-disable no-console */
+    /* eslint-disable no-console */
   static injectCSS() {
-    (process.env.NODE_ENV !== "production")
-      && console.warn(
-        'React-Modal: injectCSS has been deprecated ' +
-          'and no longer has any effect. It will be removed in a later version'
-      );
+    process.env.NODE_ENV !== 'production' &&
+            console.warn(
+                'React-Modal: injectCSS has been deprecated ' +
+                    'and no longer has any effect. It will be removed in a later version'
+            );
   }
-  /* eslint-enable no-console */
+    /* eslint-enable no-console */
 
-  /* eslint-disable react/no-unused-prop-types */
+    /* eslint-disable react/no-unused-prop-types */
   static propTypes = {
     isOpen: PropTypes.bool.isRequired,
     style: PropTypes.shape({
@@ -38,14 +36,8 @@ export default class Modal extends Component {
     }),
     portalClassName: PropTypes.string,
     bodyOpenClassName: PropTypes.string,
-    className: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.object
-    ]),
-    overlayClassName: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.object
-    ]),
+    className: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+    overlayClassName: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     appElement: PropTypes.instanceOf(SafeHTMLElement),
     onAfterOpen: PropTypes.func,
     onRequestClose: PropTypes.func,
@@ -57,7 +49,7 @@ export default class Modal extends Component {
     role: PropTypes.string,
     contentLabel: PropTypes.string.isRequired
   };
-  /* eslint-enable react/no-unused-prop-types */
+    /* eslint-enable react/no-unused-prop-types */
 
   static defaultProps = {
     isOpen: false,
@@ -66,7 +58,9 @@ export default class Modal extends Component {
     ariaHideApp: true,
     closeTimeoutMS: 0,
     shouldCloseOnOverlayClick: true,
-    parentSelector() { return document.body; }
+    parentSelector() {
+      return document.body;
+    }
   };
 
   static defaultStyles = {
@@ -100,13 +94,11 @@ export default class Modal extends Component {
 
     const parent = getParentElement(this.props.parentSelector);
     parent.appendChild(this.node);
-
-    this.renderPortal(this.props);
   }
 
   componentWillReceiveProps(newProps) {
     const { isOpen } = newProps;
-    // Stop unnecessary renders if modal is remaining closed
+        // Stop unnecessary renders if modal is remaining closed
     if (!this.props.isOpen && !isOpen) return;
 
     const currentParent = getParentElement(this.props.parentSelector);
@@ -116,8 +108,6 @@ export default class Modal extends Component {
       currentParent.removeChild(this.node);
       newParent.appendChild(this.node);
     }
-
-    this.renderPortal(newProps);
   }
 
   componentWillUpdate(newProps) {
@@ -127,13 +117,12 @@ export default class Modal extends Component {
   }
 
   componentWillUnmount() {
-    if (!this.node) return;
+    if (!this.node || !this.portal) return;
 
     const state = this.portal.state;
     const now = Date.now();
-    const closesAt = state.isOpen && this.props.closeTimeoutMS
-      && (state.closesAt
-        || now + this.props.closeTimeoutMS);
+    const closesAt =
+            state.isOpen && this.props.closeTimeoutMS && (state.closesAt || now + this.props.closeTimeoutMS);
 
     if (closesAt) {
       if (!state.beforeClose) {
@@ -150,15 +139,12 @@ export default class Modal extends Component {
     ReactDOM.unmountComponentAtNode(this.node);
     const parent = getParentElement(this.props.parentSelector);
     parent.removeChild(this.node);
-  }
-
-  renderPortal = props => {
-    this.portal = renderSubtreeIntoContainer(this, (
-      <ModalPortal defaultStyles={Modal.defaultStyles} {...props} />
-    ), this.node);
-  }
+  };
 
   render() {
-    return null;
+    return ReactDOM.unstable_createPortal(
+      <ModalPortal defaultStyles={Modal.defaultStyles} {...this.props} />,
+            this.node
+        );
   }
 }
